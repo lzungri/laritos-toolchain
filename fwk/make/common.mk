@@ -1,9 +1,10 @@
 ifndef ARCH
-  $(error ARCH variable not set. Supported architectures: arm)
+	$(error ARCH variable not set. Supported architectures: arm)
 endif
 
 ifndef APP
-  $(error APP variable not set)
+	# Set apps/<folder> as the app name
+	APP := $(shell basename $(CURDIR))
 endif
 
 # laritos-userpace root folder (build is launched from within the app directory)
