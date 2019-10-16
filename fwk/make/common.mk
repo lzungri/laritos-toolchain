@@ -20,6 +20,7 @@ NM := $(CROSS_COMPILE)nm
 STRIP := $(CROSS_COMPILE)strip
 OBJCOPY := $(CROSS_COMPILE)objcopy
 OBJDUMP := $(CROSS_COMPILE)objdump
+READELF := $(CROSS_COMPILE)readelf
 
 
 # Target OS
@@ -59,6 +60,9 @@ CFLAGS += -Wno-packed-not-aligned
 CFLAGS += -fvisibility=hidden
 CFLAGS += -fno-unwind-tables
 
+# laritOS uses a 4-byte wchar by default
+CFLAGS += -fno-short-wchar
+
 # Standard
 CFLAGS += -std=gnu11
 
@@ -68,8 +72,10 @@ CFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 # Include paths
 CFLAGS += -I$(ROOT)/fwk/libc/include
 
-# laritOS uses a 4-byte wchar by default
-CFLAGS += -fno-short-wchar
+# Enable position independent code
+CFLAGS += -fpic
+# Use pc-relative addressing for referencing symbols in the data segment
+CFLAGS += -mno-pic-data-is-text-relative
 
 # Optimization
 #CFLAGS += -Os
@@ -85,7 +91,6 @@ CFLAGS += -g
 
 # Linker flags
 APP_MEMMAP := $(ROOT)/fwk/ld/app_memmap.lds
-
 LDFLAGS += -T $(APP_MEMMAP)
 LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
@@ -103,6 +108,7 @@ LDFLAGS += -Bstatic
 # Include architecture-specific makefile
 include $(ROOT)/fwk/make/common-$(ARCH).mk
 
+
 VERBOSE = 0
 ifeq ("$(origin V)", "command line")
   VERBOSE = $(V)
@@ -117,18 +123,12 @@ endif
 OUTPUT := bin
 OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
 
+
 # Targets
 
 .PHONY: all clean printmap
 
 all: $(OUTPUT)/$(APP).elf
-
-clean:
-	$(Q)echo "CLEAN  $(OUTPUT)"
-	$(Q)rm -rf $(OUTPUT)
-
-printmap: $(OUTPUT)/$(APP).elf
-	$(Q)$(LD) --print-map $< -T $(APP_MEMMAP)
 
 $(OUTPUT)/%.o: %.c
 	$(Q)echo "CC      $@"
@@ -139,3 +139,13 @@ $(OUTPUT)/$(APP).elf: $(OBJS)
 	$(Q)echo "LD      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(LD) $(LDFLAGS) $(OBJS) -o $@
+
+clean:
+	$(Q)echo "CLEAN  $(OUTPUT)"
+	$(Q)rm -rf $(OUTPUT)
+
+printmap: $(OUTPUT)/$(APP).elf
+	$(Q)$(LD) --print-map $< -T $(APP_MEMMAP)
+
+relocs: $(OUTPUT)/$(APP).elf
+	$(Q)$(READELF) -r $<
