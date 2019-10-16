@@ -71,14 +71,14 @@ CFLAGS += -I$(ROOT)/fwk/libc/include
 CFLAGS += -fno-short-wchar
 
 # Optimization
-CFLAGS += -Os
+#CFLAGS += -Os
 
 # Benchmarking
 ifdef STACK_USAGE
 CFLAGS += -fstack-usage
 endif
 
-# Debubbing
+# Debugging
 CFLAGS += -g
 
 
@@ -86,13 +86,16 @@ CFLAGS += -g
 APP_MEMMAP := $(ROOT)/fwk/ld/app_memmap.lds
 
 LDFLAGS += -T $(APP_MEMMAP)
-LDFLAGS += -e main
 LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
+# We need relocations to be able to load the program at a different address
+LDFLAGS += --emit-relocs
 LDFLAGS += --gc-sections
 #LDFLAGS += -print-gc-sections
 # Keep symbols with default visibility
 LDFLAGS += --gc-keep-exported
+# Set the entry point (this will also prevent the linker from gc'ing the function)
+LDFLAGS += -e main
 LDFLAGS += -Bstatic
 
 
