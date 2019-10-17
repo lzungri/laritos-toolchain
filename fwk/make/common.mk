@@ -9,6 +9,9 @@ endif
 
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT := ../..
+OUTPUT := bin
+OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
+
 
 # Toolchain definition
 AS := $(CROSS_COMPILE)as
@@ -76,6 +79,8 @@ CFLAGS += -I$(ROOT)/fwk/libc/include
 CFLAGS += -fpic
 # Use pc-relative addressing for referencing symbols in the data segment
 CFLAGS += -mno-pic-data-is-text-relative
+CFLAGS += -msingle-pic-base
+CFLAGS += -mpic-register=r9
 
 # Optimization
 #CFLAGS += -Os
@@ -86,7 +91,7 @@ CFLAGS += -fstack-usage
 endif
 
 # Debugging
-CFLAGS += -g
+#CFLAGS += -g
 
 
 # Linker flags
@@ -103,6 +108,7 @@ LDFLAGS += --gc-keep-exported
 # Set the entry point (this will also prevent the linker from gc'ing the function)
 LDFLAGS += -e main
 LDFLAGS += -Bstatic
+LDFLAGS += -Map $(OUTPUT)/$(APP).elf.map
 
 
 # Include architecture-specific makefile
@@ -120,9 +126,6 @@ else
   Q = @
 endif
 
-OUTPUT := bin
-OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
-
 
 # Targets
 
@@ -130,7 +133,8 @@ OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
 
 all: $(OUTPUT)/$(APP).elf
 
-$(OUTPUT)/%.o: %.c
+# Rebuild when makefile and/or memory map change
+$(OUTPUT)/%.o: %.c $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
@@ -145,7 +149,7 @@ clean:
 	$(Q)rm -rf $(OUTPUT)
 
 printmap: $(OUTPUT)/$(APP).elf
-	$(Q)$(LD) --print-map $< -T $(APP_MEMMAP)
+	$(Q)cat $<.map
 
 relocs: $(OUTPUT)/$(APP).elf
 	$(Q)$(READELF) -r $<
