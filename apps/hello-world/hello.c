@@ -5,7 +5,9 @@ void func(void) {
     *p = 'E';
 }
 
-static char data[100] = { 0 };
+static char data[100];
+char datac[10] = { 1, 2, 3 };
+char datac2[10] = { 1, 2, 3 };
 
 int main(void) {
 //    puts("Hello World!");
@@ -13,5 +15,7 @@ int main(void) {
     *p = 1;
     func();
     data[1] = 1;
+    datac[1] = 2;
+    datac2[1] = 2;
     return 0;
 }
