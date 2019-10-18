@@ -5,17 +5,17 @@ void func(void) {
     *p = 'E';
 }
 
-static char data[100];
-char datac[10] = { 1, 2, 3 };
-char datac2[10] = { 1, 2, 3 };
+char data[0xaa];
+char datac[16] = { 1, 2, 3 };
+char datac2[16] = { 4, 5, 6 };
 
 int main(void) {
 //    puts("Hello World!");
     volatile char *p = (char *) 0xffff;
     *p = 1;
     func();
-    data[1] = 1;
-    datac[1] = 2;
-    datac2[1] = 2;
+    data[0] = 0;
+    datac[1] = 1;
+    datac2[2] = 2;
     return 0;
 }
