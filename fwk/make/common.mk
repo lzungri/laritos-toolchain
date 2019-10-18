@@ -96,11 +96,11 @@ endif
 
 # Linker flags
 APP_MEMMAP := $(ROOT)/fwk/ld/app_memmap.lds
-LDFLAGS += -T $(APP_MEMMAP)
+LDFLAGS += -Map $(OUTPUT)/$(APP).elf.map
 LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
-# We need relocations to be able to load the program at a different address
 LDFLAGS += --emit-relocs
+# We need relocations to be able to load the program at a different address
 LDFLAGS += --gc-sections
 #LDFLAGS += -print-gc-sections
 # Keep symbols with default visibility
@@ -108,7 +108,7 @@ LDFLAGS += --gc-keep-exported
 # Set the entry point (this will also prevent the linker from gc'ing the function)
 LDFLAGS += -e main
 LDFLAGS += -Bstatic
-LDFLAGS += -Map $(OUTPUT)/$(APP).elf.map
+LDFLAGS += -T $(APP_MEMMAP)
 
 
 # Include architecture-specific makefile
@@ -131,7 +131,7 @@ endif
 
 .PHONY: all clean printmap
 
-all: $(OUTPUT)/$(APP).elf
+all: $(OUTPUT)/$(APP).bin
 
 # Rebuild when makefile and/or memory map change
 $(OUTPUT)/%.o: %.c $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
@@ -139,6 +139,13 @@ $(OUTPUT)/%.o: %.c $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
+# Build app binary: just app header, code, data and relocations
+$(OUTPUT)/$(APP).bin: $(OUTPUT)/$(APP).elf
+	$(Q)echo "OBJCOPY $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(OBJCOPY) --remove-section .misc -O binary $< $@
+
+# Build app elf
 $(OUTPUT)/$(APP).elf: $(OBJS)
 	$(Q)echo "LD      $@"
 	$(Q)mkdir -p $(dir $@)
@@ -153,3 +160,6 @@ printmap: $(OUTPUT)/$(APP).elf
 
 relocs: $(OUTPUT)/$(APP).elf
 	$(Q)$(READELF) -r $<
+
+xxd: $(OUTPUT)/$(APP).bin
+	$(Q)xxd -c4 -e $<
