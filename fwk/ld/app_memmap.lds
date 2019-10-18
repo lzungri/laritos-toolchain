@@ -13,26 +13,28 @@ SECTIONS
         /* "LARO" magic number */
         LONG(0x4F52414c);
 
+        LONG(__app_bin_size);
+
         LONG(__text_start);
-        LONG(__text_end);
+        LONG(__text_size);
 
         LONG(__data_start);
-        LONG(__data_end);
+        LONG(__data_size);
 
         LONG(__got_start);
-        LONG(__got_end);
+        LONG(__got_size);
 
         LONG(__bss_start);
-        LONG(__bss_end);
-
-        LONG(__heap_start);
-        LONG(__heap_end);
-
-        LONG(__stack_end);
-        LONG(__stack_top);
+        LONG(__bss_size);
 
         LONG(__reloc_start);
-        LONG(__reloc_end);
+        LONG(__reloc_size);
+
+        LONG(__heap_start);
+        LONG(__heap_size);
+
+        LONG(__stack_end);
+        LONG(__stack_size);
     } > mem
 
     /* App code */
@@ -40,6 +42,10 @@ SECTIONS
         /* Code */
         . = ALIGN(4);
         __text_start = ABSOLUTE(.);
+        /* Put the main() function right after the header so we know where to jump to start
+           the app (implicit entry point).
+           Note: each func has its own section thanks to -ffunction-sections */
+        *(.text.main);
         *(.text);
         *(.text.*);
 
@@ -53,8 +59,8 @@ SECTIONS
 
         . = ALIGN(4);
         __text_end = ABSOLUTE(.);
-        __text_size = __text_end - __text_start;
     } > mem
+    __text_size = __text_end - __text_start;
 
     /* Data section/s will be manually relocated in ram. */
     .data : {
@@ -63,9 +69,6 @@ SECTIONS
         . = ALIGN(4);
         *(.data);
         *(.data.*);
-        . = ALIGN(4);
-        __data_end = ABSOLUTE(.);
-        __data_size = __data_end - __data_start;
 
         . = ALIGN(4);
         __got_start = ABSOLUTE(.);
@@ -74,9 +77,29 @@ SECTIONS
         *(.got.*);
         . = ALIGN(4);
         __got_end = ABSOLUTE(.);
-        __got_size = __got_end - __got_start;
+        . = ALIGN(4);
+        __data_end = ABSOLUTE(.);
      } > mem
+    __data_size = __data_end - __data_start;
+    __got_size = __got_end - __got_start;
     ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
+
+    .reloc : {
+        . = ALIGN(4);
+        __reloc_start = ABSOLUTE(.);
+        . = ALIGN(4);
+        *(.rel);
+        *(.rel.*);
+        . = ALIGN(4);
+        __reloc_end = ABSOLUTE(.);
+    } > mem
+    __reloc_size = __reloc_end - __reloc_start;
+
+    /* Variable used to transfer the .data section from flash to ram */
+    __reloc_lma = LOADADDR(.reloc);
+
+    /* App binary size (actual size of <app>.bin) */
+    __app_bin_size = __reloc_lma + SIZEOF(.reloc);
 
     /* Non initialized data will be manually allocated (and zeroed) in ram */
     .bss : {
@@ -86,34 +109,25 @@ SECTIONS
         *(.bss.*);
         . = ALIGN(4);
         __bss_end = ABSOLUTE(.);
-        __bss_size = __bss_end - __bss_start;
     } > mem
+    __bss_size = __bss_end - __bss_start;
     ASSERT(__bss_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .bss")
 
     /* Heap located right after the .bss section */
     . = ALIGN(4);
     __heap_start = .;
-    __heap_end = __heap_start + 1 * 1024 * 1024;
+    __heap_size = 1 * 1024 * 1024;
+    __heap_end = __heap_start + __heap_size;
     . = __heap_end;
     ASSERT(__heap_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app heap")
 
     /* Stack located right after the heap */
     . = ALIGN(4);
     __stack_end = .;
-    __stack_top = __stack_end + 8 * 1024;
-    __stack_size = __stack_top - __stack_end;
+    __stack_size = 8 * 1024;
+    __stack_top = __stack_end + __stack_size;
+    . = __stack_top;
     ASSERT(__stack_top < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app stack")
-
-    .reloc : {
-        . = ALIGN(4);
-        __reloc_start = ABSOLUTE(.);
-        . = ALIGN(4);
-        /* Only code relocations */
-        *(.rel.text);
-        . = ALIGN(4);
-        __reloc_end = ABSOLUTE(.);
-        __reloc_size = __reloc_end - __reloc_start;
-     } > mem
 
     .misc : {
         . = ALIGN(4);
@@ -121,11 +135,9 @@ SECTIONS
         . = ALIGN(4);
         *(.igot.*);
         *(.iplt);
-        /* All the other relocations */
-        *(.rel.*);
         . = ALIGN(4);
         __misc_end = ABSOLUTE(.);
         __misc_size = __misc_end - __misc_start;
-     } > mem
+    } > mem
     ASSERT(__misc_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .reloc")
 }
