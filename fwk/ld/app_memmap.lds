@@ -16,41 +16,6 @@ SECTIONS
         *(.iplt)
     }
 
-    /* Application binary header (appheader_t)*/
-    .header : {
-        /* "LARO" magic number */
-        LONG(0x4F52414c)
-
-        /* Header version */
-        LONG(0)
-
-        LONG(__app_bin_size)
-
-        LONG(__text_start)
-        LONG(__text_size)
-
-        LONG(__data_start)
-        LONG(__data_size)
-
-        LONG(__got_start)
-        LONG(__got_size)
-
-        LONG(__reloc_start)
-        LONG(__reloc_size)
-
-        LONG(__symbol_start)
-        LONG(__symbol_size)
-
-        LONG(__bss_start)
-        LONG(__bss_size)
-
-        LONG(__heap_start)
-        LONG(__heap_size)
-
-        LONG(__stack_end)
-        LONG(__stack_size)
-    } > mem
-
     /* App code */
     .text : {
         /* Code */
@@ -97,31 +62,6 @@ SECTIONS
     __data_size = __data_end - __data_start;
     __got_size = __got_end - __got_start;
     ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
-
-    .symbol : {
-        . = ALIGN(4);
-        __symbol_start = ABSOLUTE(.);
-        . = ALIGN(4);
-        *(.symtab)
-        *(.strtab)
-        . = ALIGN(4);
-        __symbol_end = ABSOLUTE(.);
-    } > mem
-    __symbol_size = __symbol_end - __symbol_start;
-
-    .reloc : {
-        . = ALIGN(4);
-        __reloc_start = ABSOLUTE(.);
-        . = ALIGN(4);
-        *(.rel)
-        *(.rel.*)
-        . = ALIGN(4);
-        __reloc_end = ABSOLUTE(.);
-    } > mem
-    __reloc_size = __reloc_end - __reloc_start;
-
-    /* App binary size (actual size of <app>.bin) */
-    __app_bin_size = LOADADDR(.reloc) + SIZEOF(.reloc);
 
     /* Non initialized data will be manually allocated (and zeroed) in ram */
     .bss : {

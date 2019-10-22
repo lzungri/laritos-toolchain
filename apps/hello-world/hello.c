@@ -3,9 +3,11 @@
 char data[0xaa];
 char datac[16] = { 1, 2, 3 };
 char datac2[16] = { 4, 5, 6 };
+char datac3[16] = { 8, 9, 0 };
 
 void func(void) {
-    data[1] = 0xaa;
+    data[1] = 1;
+    datac3[1] = 2;
 }
 
 int main(void) {

@@ -129,21 +129,15 @@ endif
 
 # Targets
 
-.PHONY: all clean printmap
+.PHONY: all clean printmap relocs
 
-all: $(OUTPUT)/$(APP).bin
+all: $(OUTPUT)/$(APP).elf
 
 # Rebuild when makefile and/or memory map change
 $(OUTPUT)/%.o: %.c $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
-
-# Build app binary: just app header, code, data and relocations
-$(OUTPUT)/$(APP).bin: $(OUTPUT)/$(APP).elf
-	$(Q)echo "OBJCOPY $@"
-	$(Q)mkdir -p $(dir $@)
-	$(Q)$(OBJCOPY) --remove-section .misc -O binary $< $@
 
 # Build app elf
 $(OUTPUT)/$(APP).elf: $(OBJS)
@@ -160,6 +154,3 @@ printmap: $(OUTPUT)/$(APP).elf
 
 relocs: $(OUTPUT)/$(APP).elf
 	$(Q)$(READELF) -r $<
-
-xxd: $(OUTPUT)/$(APP).bin
-	$(Q)xxd -c4 -e $<
