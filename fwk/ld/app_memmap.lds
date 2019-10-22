@@ -93,6 +93,17 @@ SECTIONS
     __got_size = __got_end - __got_start;
     ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
 
+    .symbol : {
+        . = ALIGN(4);
+        __symbol_start = ABSOLUTE(.);
+        . = ALIGN(4);
+        *(.symtab)
+        *(.strtab)
+        . = ALIGN(4);
+        __symbol_end = ABSOLUTE(.);
+    } > mem
+    __symbol_size = __symbol_end - __symbol_start;
+
     .reloc : {
         . = ALIGN(4);
         __reloc_start = ABSOLUTE(.);
