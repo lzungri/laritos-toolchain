@@ -19,31 +19,36 @@ SECTIONS
     /* Application binary header (appheader_t)*/
     .header : {
         /* "LARO" magic number */
-        LONG(0x4F52414c);
+        LONG(0x4F52414c)
 
         /* Header version */
         LONG(0)
 
-        LONG(__text_start);
-        LONG(__text_size);
+        LONG(__app_bin_size)
 
-        LONG(__data_start);
-        LONG(__data_size);
+        LONG(__text_start)
+        LONG(__text_size)
 
-        LONG(__got_start);
-        LONG(__got_size);
+        LONG(__data_start)
+        LONG(__data_size)
 
-        LONG(__bss_start);
-        LONG(__bss_size);
+        LONG(__got_start)
+        LONG(__got_size)
 
-        LONG(__reloc_start);
-        LONG(__reloc_size);
+        LONG(__reloc_start)
+        LONG(__reloc_size)
 
-        LONG(__heap_start);
-        LONG(__heap_size);
+        LONG(__symbol_start)
+        LONG(__symbol_size)
 
-        LONG(__stack_end);
-        LONG(__stack_size);
+        LONG(__bss_start)
+        LONG(__bss_size)
+
+        LONG(__heap_start)
+        LONG(__heap_size)
+
+        LONG(__stack_end)
+        LONG(__stack_size)
     } > mem
 
     /* App code */
@@ -54,17 +59,17 @@ SECTIONS
         /* Put the main() function right after the header so we know where to jump to start
            the app (implicit entry point).
            Note: each func has its own section thanks to -ffunction-sections */
-        *(.text.main);
-        *(.text);
-        *(.text.*);
+        *(.text.main)
+        *(.text)
+        *(.text.*)
 
         /* Keep the read only data in the mem */
-        *(.rodata*);
+        *(.rodata*)
 
         /* ARM stuff */
-        *(.glue*);
-        *(.vfp11_veneer);
-        *(.v4_bx*);
+        *(.glue*)
+        *(.vfp11_veneer)
+        *(.v4_bx*)
 
         . = ALIGN(4);
         __text_end = ABSOLUTE(.);
@@ -76,14 +81,14 @@ SECTIONS
         . = ALIGN(4);
         __data_start = ABSOLUTE(.);
         . = ALIGN(4);
-        *(.data);
-        *(.data.*);
+        *(.data)
+        *(.data.*)
 
         . = ALIGN(4);
         __got_start = ABSOLUTE(.);
         . = ALIGN(4);
-        *(.got);
-        *(.got.*);
+        *(.got)
+        *(.got.*)
         . = ALIGN(4);
         __got_end = ABSOLUTE(.);
         . = ALIGN(4);
@@ -108,25 +113,22 @@ SECTIONS
         . = ALIGN(4);
         __reloc_start = ABSOLUTE(.);
         . = ALIGN(4);
-        *(.rel);
-        *(.rel.*);
+        *(.rel)
+        *(.rel.*)
         . = ALIGN(4);
         __reloc_end = ABSOLUTE(.);
     } > mem
     __reloc_size = __reloc_end - __reloc_start;
 
-    /* Variable used to transfer the .data section from flash to ram */
-    __reloc_lma = LOADADDR(.reloc);
-
     /* App binary size (actual size of <app>.bin) */
-    __app_bin_size = __reloc_lma + SIZEOF(.reloc);
+    __app_bin_size = LOADADDR(.reloc) + SIZEOF(.reloc);
 
     /* Non initialized data will be manually allocated (and zeroed) in ram */
     .bss : {
         . = ALIGN(4);
         __bss_start = ABSOLUTE(.);
-        *(.bss);
-        *(.bss.*);
+        *(.bss)
+        *(.bss.*)
         . = ALIGN(4);
         __bss_end = ABSOLUTE(.);
     } > mem
@@ -148,16 +150,4 @@ SECTIONS
     __stack_top = __stack_end + __stack_size;
     . = __stack_top;
     ASSERT(__stack_top < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app stack")
-
-    .misc : {
-        . = ALIGN(4);
-        __misc_start = ABSOLUTE(.);
-        . = ALIGN(4);
-        *(.igot.*);
-        *(.iplt);
-        . = ALIGN(4);
-        __misc_end = ABSOLUTE(.);
-        __misc_size = __misc_end - __misc_start;
-    } > mem
-    ASSERT(__misc_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .reloc")
 }
