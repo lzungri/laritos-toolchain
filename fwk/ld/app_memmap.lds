@@ -8,6 +8,14 @@ SECTIONS
     /* Point the location counter to the origin of the mem memory */
     . = ORIGIN(mem);
 
+    /* Special ld section to ignore input sections */
+    /DISCARD/ : {
+        *(.ARM.exidx*)
+        *(.ARM.extab*)
+        *(.igot.*)
+        *(.iplt)
+    }
+
     /* Application binary header (appheader_t)*/
     .header : {
         /* "LARO" magic number */
