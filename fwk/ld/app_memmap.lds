@@ -21,7 +21,8 @@ SECTIONS
         /* "LARO" magic number */
         LONG(0x4F52414c);
 
-        LONG(__app_bin_size);
+        /* Header version */
+        LONG(0)
 
         LONG(__text_start);
         LONG(__text_size);
