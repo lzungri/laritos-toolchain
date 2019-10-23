@@ -14,6 +14,8 @@ SECTIONS
         *(.ARM.extab*)
         *(.igot.*)
         *(.iplt)
+        *(.comment)
+        *(.ARM.attributes)
     }
 
     /* App code */
@@ -39,7 +41,7 @@ SECTIONS
         . = ALIGN(4);
         __text_end = ABSOLUTE(.);
     } > mem
-    __text_size = __text_end - __text_start;
+    ASSERT(__text_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .text")
 
     /* Data section/s will be manually relocated in ram. */
     .data : {
@@ -59,7 +61,6 @@ SECTIONS
         . = ALIGN(4);
         __data_end = ABSOLUTE(.);
      } > mem
-    __data_size = __data_end - __data_start;
     __got_size = __got_end - __got_start;
     ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
 
@@ -72,22 +73,27 @@ SECTIONS
         . = ALIGN(4);
         __bss_end = ABSOLUTE(.);
     } > mem
-    __bss_size = __bss_end - __bss_start;
     ASSERT(__bss_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .bss")
 
-    /* Heap located right after the .bss section */
-    . = ALIGN(4);
-    __heap_start = .;
-    __heap_size = 1 * 1024 * 1024;
-    __heap_end = __heap_start + __heap_size;
-    . = __heap_end;
-    ASSERT(__heap_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app heap")
+    /* NOLOAD: Do not load it into memory. Here we use it to prevent allocating unnecessary
+       space for the heap in the file itself (similar to .bss) */
+    .heap (NOLOAD) : {
+        . = ALIGN(4);
+        __heap_start = ABSOLUTE(.);
+        KEEP(*(.heap))
+        . = ALIGN(4);
+        __heap_end = ABSOLUTE(.);
+    } > mem
+    ASSERT(__heap_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .heap")
 
-    /* Stack located right after the heap */
-    . = ALIGN(4);
-    __stack_end = .;
-    __stack_size = 8 * 1024;
-    __stack_top = __stack_end + __stack_size;
-    . = __stack_top;
-    ASSERT(__stack_top < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app stack")
+    /* NOLOAD: Do not load it into memory. Here we use it to prevent allocating unnecessary
+       space for the stack in the file itself (similar to .bss) */
+    .stack (NOLOAD) : {
+        . = ALIGN(4);
+        __stack_start = ABSOLUTE(.);
+        KEEP(*(.stack))
+        . = ALIGN(4);
+        __stack_end = ABSOLUTE(.);
+    } > mem
+    ASSERT(__stack_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .stack")
 }
