@@ -61,6 +61,11 @@ CFLAGS += -Werror=designated-init
 CFLAGS += -Wno-packed-not-aligned
 CFLAGS += -fvisibility=hidden
 CFLAGS += -fno-unwind-tables
+# -ffreestanding: Assert that compilation targets a freestanding environment.  This implies -fno-builtin.
+# 		A freestanding environment is one in which the standard library may not exist, and program startup may
+# 		not necessarily be at "main".  The most obvious example is an OS kernel.  This is equivalent to -fno-hosted.
+# By setting this flag, $(CROSS_COMPILE)gcc will try to use its own set of custom headers
+CFLAGS += -ffreestanding
 
 # laritOS uses a 4-byte wchar by default
 CFLAGS += -fno-short-wchar
@@ -72,7 +77,9 @@ CFLAGS += -std=gnu11
 CFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 
 # Include paths
-CFLAGS += -I$(ROOT)/fwk/libc/include
+CFLAGS += -I$(ROOT)/fwk/include/libc
+CFLAGS += -I$(ROOT)/fwk/include
+CFLAGS += -I.
 
 # Enable position independent code
 CFLAGS += -fpic
