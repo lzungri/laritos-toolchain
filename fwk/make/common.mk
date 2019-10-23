@@ -10,7 +10,6 @@ endif
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT := ../..
 OUTPUT := bin
-OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
 
 
 # Toolchain definition
@@ -127,14 +126,24 @@ else
 endif
 
 
+SRCS += /fwk/src/heap.c
+SRCS += /fwk/src/stack.c
+OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
+
 # Targets
 
 .PHONY: all clean printmap relocs
 
 all: $(OUTPUT)/$(APP).elf
 
+define add_root_prefix
+	$(if $(findstring /fwk/,$(1)),$(addprefix $(ROOT),$(1)),$(1))
+endef
+
+# Second expansion so that we can use a function in the prerequisites
+.SECONDEXPANSION:
 # Rebuild when makefile and/or memory map change
-$(OUTPUT)/%.o: %.c $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
+$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
