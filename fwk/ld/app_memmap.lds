@@ -3,6 +3,9 @@ MEMORY
     mem : ORIGIN = 0x00000000, LENGTH = 0x800000000  /* 32 GB */
 }
 
+/* TODO: Replace with _start once I implement exit() syscall */
+ENTRY(main);
+
 SECTIONS
 {
     /* Point the location counter to the origin of the mem memory */
@@ -23,10 +26,6 @@ SECTIONS
         /* Code */
         . = ALIGN(4);
         __text_start = ABSOLUTE(.);
-        /* Put the main() function right after the header so we know where to jump to start
-           the app (implicit entry point).
-           Note: each func has its own section thanks to -ffunction-sections */
-        *(.text.main)
         *(.text)
         *(.text.*)
 
@@ -50,7 +49,12 @@ SECTIONS
         . = ALIGN(4);
         *(.data)
         *(.data.*)
+        . = ALIGN(4);
+        __data_end = ABSOLUTE(.);
+     } > mem
+    ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
 
+    .got : {
         . = ALIGN(4);
         __got_start = ABSOLUTE(.);
         . = ALIGN(4);
@@ -58,11 +62,8 @@ SECTIONS
         *(.got.*)
         . = ALIGN(4);
         __got_end = ABSOLUTE(.);
-        . = ALIGN(4);
-        __data_end = ABSOLUTE(.);
      } > mem
-    __got_size = __got_end - __got_start;
-    ASSERT(__data_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .data")
+    ASSERT(__got_end < ORIGIN(mem) + LENGTH(mem), "Not enough memory to fit the app .got")
 
     /* Non initialized data will be manually allocated (and zeroed) in ram */
     .bss : {
