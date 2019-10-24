@@ -1,20 +1,26 @@
 #include <stdio.h>
 
 char data[0xaa];
-char datac[16] = { 1, 2, 3 };
-char datac2[16] = { 4, 5, 6 };
-char datac3[16] = { 8, 9, 0 };
+char datac[16] = { 1, 1, 1 };
+char datac2[16] = { 2, 2, 2 };
+char datac3[16] = { 3, 3, 3 };
 
 void func(void) {
-    data[1] = 1;
-    datac3[1] = 2;
+    data[2] = 3;
+    datac3[2] = 4;
+}
+
+void func2(void) {
+    data[1] = 2;
+    datac3[1] = 3;
+    func();
 }
 
 int main(void) {
 //    puts("Hello World!");
-    func();
-    data[0] = 0;
-    datac[1] = 1;
-    datac2[2] = 2;
+    func2();
+    data[0] = 5;
+    datac[0] = 5;
+    datac2[0] = 5;
     return 0;
 }
