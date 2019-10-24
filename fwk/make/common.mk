@@ -115,6 +115,7 @@ LDFLAGS += --gc-keep-exported
 LDFLAGS += -e main
 LDFLAGS += -Bstatic
 LDFLAGS += -T $(APP_MEMMAP)
+LDFLAGS += -e _start
 
 
 # Include architecture-specific makefile
@@ -135,7 +136,15 @@ endif
 
 SRCS += /fwk/src/heap.c
 SRCS += /fwk/src/stack.c
-OBJS := $(addprefix $(OUTPUT)/, $(SRCS:.c=.o))
+# TODO Move this to common-arm.mk
+SRCS += /fwk/src/start.S
+
+# Convert C sources to objects
+TMPOBJS := $(SRCS:.c=.o)
+# Convert assembly sources to objects
+TMPOBJS := $(TMPOBJS:.S=.o)
+# Append output folder to all objects
+OBJS := $(addprefix $(OUTPUT)/, $(TMPOBJS))
 
 # Targets
 
@@ -152,6 +161,14 @@ endef
 # Rebuild when makefile and/or memory map change
 $(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)echo "CC      $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+
+# Second expansion so that we can use a function in the prerequisites
+.SECONDEXPANSION:
+# Rebuild when makefile and/or memory map change
+$(OUTPUT)/%.o: $$(call add_root_prefix,%.S) $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
+	$(Q)echo "AS      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 

@@ -3,8 +3,7 @@ MEMORY
     mem : ORIGIN = 0x00000000, LENGTH = 0x800000000  /* 32 GB */
 }
 
-/* TODO: Replace with _start once I implement exit() syscall */
-ENTRY(main);
+ENTRY(_start);
 
 SECTIONS
 {
