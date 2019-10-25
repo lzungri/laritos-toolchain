@@ -1,16 +1,17 @@
-ifndef ARCH
-	$(error ARCH variable not set. Supported architectures: arm)
+SUP_ARCHS := $(sort $(subst $(LARITOS_TOOLCHAIN)/arch/,,$(wildcard $(LARITOS_TOOLCHAIN)/arch/*)))
+ARCH := $(filter $(ARCH),$(SUP_ARCHS))
+ifeq ($(ARCH),)
+$(error ARCH variable not set or invalid architecture. Supported architectures: $(SUP_ARCHS))
 endif
 
 ifndef APP
-	# Set apps/<folder> as the app name
-	APP := $(shell basename $(CURDIR))
+# Set apps/<folder> as the app name
+APP := $(shell basename $(CURDIR))
 endif
 
 # laritos-userpace root folder (build is launched from within the app directory)
-ROOT := ../..
-ROOT_TOOLCHAIN := $(ROOT)/toolchain
-ROOT_ARCH := $(ROOT_TOOLCHAIN)/$(ARCH)
+ROOT_TOOLCHAIN := $(LARITOS_TOOLCHAIN)
+ROOT_ARCH := $(ROOT_TOOLCHAIN)/arch/$(ARCH)
 
 OUTPUT := bin/$(ARCH)
 OUTPUT_DEPS := $(OUTPUT)/deps
@@ -32,7 +33,7 @@ READELF := $(CROSS_COMPILE)readelf
 # Target OS
 CFLAGS += -D__LARITOS__
 
-# Warning/error (mostly taken from linux makefile)
+# Warning/error (mostly taken from laritOS makefile)
 CFLAGS += -Wall
 CFLAGS += -Wundef
 CFLAGS += -Werror=strict-prototypes
@@ -137,18 +138,14 @@ else
 endif
 
 
-# Architecture dependent sources
-SRCS += /toolchain/$(ARCH)/src/heap.c
-SRCS += /toolchain/$(ARCH)/src/stack.c
-SRCS += /toolchain/$(ARCH)/src/start.S
+SRCS_C := $(filter %.c,$(SRCS))
+SRCS_AS := $(filter %.S,$(SRCS))
 
-# Convert C sources to objects
-TMPOBJS := $(SRCS:.c=.o)
-# Convert assembly sources to objects
-TMPOBJS := $(TMPOBJS:.S=.o)
 # Append output folder to all objects
-OBJS := $(addprefix $(OUTPUT)/, $(TMPOBJS))
-DEPS := $(SRCS:%.c=$(OUTPUT_DEPS)/%.d)
+OBJS := $(addprefix $(OUTPUT)/, $(SRCS_C:.c=.o))
+OBJS += $(addprefix $(OUTPUT)/, $(SRCS_AS:.S=.o))
+
+DEPS := $(SRCS_C:%.c=$(OUTPUT_DEPS)/%.d)
 
 # Targets
 
@@ -156,23 +153,15 @@ DEPS := $(SRCS:%.c=$(OUTPUT_DEPS)/%.d)
 
 all: $(OUTPUT)/$(APP).elf
 
-define add_root_prefix
-	$(if $(findstring /toolchain/,$(1)),$(addprefix $(ROOT),$(1)),$(1))
-endef
-
-# Second expansion so that we can use a function in the prerequisites
-.SECONDEXPANSION:
 # Rebuild when dependencies, makefile and/or memory map change
-$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
+$(OUTPUT)/%.o: %.c $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)mkdir -p $(OUTPUT_DEPS)/$(subst $(OUTPUT),,$(dir $@))
 	$(Q)$(CC) $(CFLAGS) $(CFLAGS_DEPS) -c $< -o $@
 
-# Second expansion so that we can use a function in the prerequisites
-.SECONDEXPANSION:
 # Rebuild when makefile and/or memory map change
-$(OUTPUT)/%.o: $$(call add_root_prefix,%.S) $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
+$(OUTPUT)/%.o: %.S $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
 	$(Q)echo "AS      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
