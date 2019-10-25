@@ -156,14 +156,14 @@ DEPS := $(SRCS_C:%.c=$(OUTPUT_DEPS)/%.d)
 all: $(OUTPUT)/$(APP).elf
 
 # Rebuild when dependencies, makefile and/or memory map change
-$(OUTPUT)/%.o: %.c $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
+$(OUTPUT)/%.o: %.c $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/build/main.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)mkdir -p $(OUTPUT_DEPS)/$(subst $(OUTPUT),,$(dir $@))
 	$(Q)$(CC) $(CFLAGS) $(CFLAGS_DEPS) -c $< -o $@
 
 # Rebuild when makefile and/or memory map change
-$(OUTPUT)/%.o: %.S $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
+$(OUTPUT)/%.o: %.S $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/build/main.mk
 	$(Q)echo "AS      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
