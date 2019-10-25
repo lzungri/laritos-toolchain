@@ -1,3 +1,3 @@
 SRCS += hello.c
 
-include ../../fwk/make/common.mk
+include ../../toolchain/main.mk

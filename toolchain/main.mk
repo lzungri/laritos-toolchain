@@ -9,7 +9,10 @@ endif
 
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT := ../..
-OUTPUT := bin
+ROOT_TOOLCHAIN := $(ROOT)/toolchain
+ROOT_ARCH := $(ROOT_TOOLCHAIN)/$(ARCH)
+
+OUTPUT := bin/$(ARCH)
 OUTPUT_DEPS := $(OUTPUT)/deps
 
 
@@ -78,8 +81,8 @@ CFLAGS += -std=gnu11
 CFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 
 # Include paths
-CFLAGS += -I$(ROOT)/fwk/include/libc
-CFLAGS += -I$(ROOT)/fwk/include
+CFLAGS += -I$(ROOT_ARCH)/include/libc
+CFLAGS += -I$(ROOT_ARCH)/include
 CFLAGS += -I.
 
 # Enable position independent code
@@ -104,7 +107,7 @@ endif
 CFLAGS_DEPS = -MT $@ -MMD -MP -MF $(OUTPUT_DEPS)/$*.d
 
 # Linker flags
-APP_MEMMAP := $(ROOT)/fwk/ld/app_memmap.lds
+APP_MEMMAP := $(ROOT_ARCH)/ld/app_memmap.lds
 LDFLAGS += -Map $(OUTPUT)/$(APP).elf.map
 LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
@@ -114,15 +117,12 @@ LDFLAGS += --gc-sections
 #LDFLAGS += -print-gc-sections
 # Keep symbols with default visibility
 LDFLAGS += --gc-keep-exported
-# Set the entry point (this will also prevent the linker from gc'ing the function)
-LDFLAGS += -e main
 LDFLAGS += -Bstatic
 LDFLAGS += -T $(APP_MEMMAP)
-LDFLAGS += -e _start
 
 
 # Include architecture-specific makefile
-include $(ROOT)/fwk/make/common-$(ARCH).mk
+include $(ROOT_ARCH)/Makefile
 
 
 VERBOSE = 0
@@ -137,10 +137,10 @@ else
 endif
 
 
-SRCS += /fwk/src/heap.c
-SRCS += /fwk/src/stack.c
-# TODO Move this to common-arm.mk
-SRCS += /fwk/src/start.S
+# Architecture dependent sources
+SRCS += /toolchain/$(ARCH)/src/heap.c
+SRCS += /toolchain/$(ARCH)/src/stack.c
+SRCS += /toolchain/$(ARCH)/src/start.S
 
 # Convert C sources to objects
 TMPOBJS := $(SRCS:.c=.o)
@@ -157,13 +157,13 @@ DEPS := $(SRCS:%.c=$(OUTPUT_DEPS)/%.d)
 all: $(OUTPUT)/$(APP).elf
 
 define add_root_prefix
-	$(if $(findstring /fwk/,$(1)),$(addprefix $(ROOT),$(1)),$(1))
+	$(if $(findstring /toolchain/,$(1)),$(addprefix $(ROOT),$(1)),$(1))
 endef
 
 # Second expansion so that we can use a function in the prerequisites
 .SECONDEXPANSION:
 # Rebuild when dependencies, makefile and/or memory map change
-$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
+$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)mkdir -p $(OUTPUT_DEPS)/$(subst $(OUTPUT),,$(dir $@))
@@ -172,7 +172,7 @@ $(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(R
 # Second expansion so that we can use a function in the prerequisites
 .SECONDEXPANSION:
 # Rebuild when makefile and/or memory map change
-$(OUTPUT)/%.o: $$(call add_root_prefix,%.S) $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
+$(OUTPUT)/%.o: $$(call add_root_prefix,%.S) $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/main.mk
 	$(Q)echo "AS      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
