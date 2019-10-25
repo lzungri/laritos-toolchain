@@ -10,6 +10,7 @@ endif
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT := ../..
 OUTPUT := bin
+OUTPUT_DEPS := $(OUTPUT)/deps
 
 
 # Toolchain definition
@@ -99,6 +100,8 @@ endif
 # Debugging
 #CFLAGS += -g
 
+# Generate dependency files (useful for rebuilding on header change)
+CFLAGS_DEPS = -MT $@ -MMD -MP -MF $(OUTPUT_DEPS)/$*.d
 
 # Linker flags
 APP_MEMMAP := $(ROOT)/fwk/ld/app_memmap.lds
@@ -145,6 +148,7 @@ TMPOBJS := $(SRCS:.c=.o)
 TMPOBJS := $(TMPOBJS:.S=.o)
 # Append output folder to all objects
 OBJS := $(addprefix $(OUTPUT)/, $(TMPOBJS))
+DEPS := $(SRCS:%.c=$(OUTPUT_DEPS)/%.d)
 
 # Targets
 
@@ -158,11 +162,12 @@ endef
 
 # Second expansion so that we can use a function in the prerequisites
 .SECONDEXPANSION:
-# Rebuild when makefile and/or memory map change
-$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
+# Rebuild when dependencies, makefile and/or memory map change
+$(OUTPUT)/%.o: $$(call add_root_prefix,%.c) $(OUTPUT_DEPS)/%.d $(APP_MEMMAP) $(ROOT)/fwk/make/common.mk
 	$(Q)echo "CC      $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	$(Q)mkdir -p $(OUTPUT_DEPS)/$(subst $(OUTPUT),,$(dir $@))
+	$(Q)$(CC) $(CFLAGS) $(CFLAGS_DEPS) -c $< -o $@
 
 # Second expansion so that we can use a function in the prerequisites
 .SECONDEXPANSION:
@@ -177,6 +182,10 @@ $(OUTPUT)/$(APP).elf: $(OBJS)
 	$(Q)echo "LD      $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(LD) $(LDFLAGS) $(OBJS) -o $@
+
+$(DEPS):
+
+include $(wildcard $(DEPS))
 
 clean:
 	$(Q)echo "CLEAN  $(OUTPUT)"
