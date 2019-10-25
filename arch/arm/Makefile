@@ -9,3 +9,8 @@ CFLAGS += -Wa,-march=$(SUBARCH)
 CFLAGS += -mlittle-endian
 CFLAGS += -msoft-float
 CFLAGS += -Uarm
+
+# Architecture dependent sources
+SRCS += $(ROOT_ARCH)/src/heap.c
+SRCS += $(ROOT_ARCH)/src/stack.c
+SRCS += $(ROOT_ARCH)/src/start.S
