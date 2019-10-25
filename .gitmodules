@@ -1,3 +1,0 @@
-[submodule "deps/laritos"]
-	path = deps/laritos
-	url = git@github.com:lzungri/laritos.git
