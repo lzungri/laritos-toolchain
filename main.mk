@@ -1,3 +1,5 @@
+LARITOS_TOOLCHAIN := $(abspath $(LARITOS_TOOLCHAIN))
+
 SUP_ARCHS := $(sort $(subst $(LARITOS_TOOLCHAIN)/arch/,,$(wildcard $(LARITOS_TOOLCHAIN)/arch/*)))
 ARCH := $(filter $(ARCH),$(SUP_ARCHS))
 ifeq ($(ARCH),)
