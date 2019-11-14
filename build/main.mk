@@ -11,6 +11,7 @@ ifndef APP
 APP := $(shell basename $(CURDIR))
 endif
 
+
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT_TOOLCHAIN := $(LARITOS_TOOLCHAIN)
 ROOT_ARCH := $(ROOT_TOOLCHAIN)/arch/$(ARCH)
@@ -48,6 +49,11 @@ ifeq ($(VERBOSE),1)
 else
   Q = @
 endif
+
+
+# Include application makefile. This will setup the sources to build, among other stuff
+include $(CURDIR)/Makefile
+
 
 # Separate sources by type
 SRCS_C := $(filter %.c,$(SRCS))
