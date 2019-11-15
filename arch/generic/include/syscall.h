@@ -1,14 +1,7 @@
 #pragma once
 
+#include <syscall-no.h>
 #include <arch/syscall.h>
-
-typedef enum {
-    SYSCALL_EXIT = 0,
-    SYSCALL_YIELD,
-    SYSCALL_PUTS,
-
-    SYSCALL_LEN,
-} syscall_t;
 
 
 // Magical macros taken from linux/include/linux/syscalls.h
