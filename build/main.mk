@@ -15,6 +15,7 @@ endif
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT_TOOLCHAIN := $(LARITOS_TOOLCHAIN)
 ROOT_ARCH := $(ROOT_TOOLCHAIN)/arch/$(ARCH)
+ROOT_GENERIC_ARCH := $(ROOT_TOOLCHAIN)/arch/generic
 
 OUTPUT := bin/$(ARCH)
 OUTPUT_DEPS := $(OUTPUT)/deps

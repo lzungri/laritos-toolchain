@@ -52,6 +52,8 @@ CFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 # Include paths
 CFLAGS += -I$(ROOT_ARCH)/include/libc
 CFLAGS += -I$(ROOT_ARCH)/include
+CFLAGS += -I$(ROOT_GENERIC_ARCH)/include/libc
+CFLAGS += -I$(ROOT_GENERIC_ARCH)/include
 CFLAGS += -I.
 
 # Enable position independent code
