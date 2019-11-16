@@ -63,6 +63,8 @@ CFLAGS += -mno-pic-data-is-text-relative
 CFLAGS += -msingle-pic-base
 CFLAGS += -mpic-register=r9
 
+GNU_LIBGCC_A := $(shell $(CC) -print-file-name=libgcc.a)
+
 # Optimization
 #CFLAGS += -Os
 
@@ -83,6 +85,7 @@ APP_MEMMAP := $(ROOT_ARCH)/ld/app_memmap.lds
 LDFLAGS += -Map $(OUTPUT)/$(APP).elf.map
 LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
+LDFLAGS += --no-whole-archive -L $(dir $(GNU_LIBGCC_A)) -lgcc --whole-archive
 LDFLAGS += --emit-relocs
 # We need relocations to be able to load the program at a different address
 LDFLAGS += --gc-sections
