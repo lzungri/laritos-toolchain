@@ -15,6 +15,7 @@ endif
 # laritos-userpace root folder (build is launched from within the app directory)
 ROOT_TOOLCHAIN := $(LARITOS_TOOLCHAIN)
 ROOT_ARCH := $(ROOT_TOOLCHAIN)/arch/$(ARCH)
+ROOT_GENERIC_ARCH := $(ROOT_TOOLCHAIN)/arch/generic
 
 OUTPUT := bin/$(ARCH)
 OUTPUT_DEPS := $(OUTPUT)/deps
@@ -37,6 +38,7 @@ include $(ROOT_TOOLCHAIN)/build/flags.mk
 
 # Include architecture-specific makefile
 include $(ROOT_ARCH)/Makefile
+include $(ROOT_GENERIC_ARCH)/Makefile
 
 
 VERBOSE = 0
@@ -88,7 +90,7 @@ $(OUTPUT)/%.o: %.S $(APP_MEMMAP) $(ROOT_TOOLCHAIN)/build/main.mk
 $(OUTPUT)/$(APP).elf: $(OBJS)
 	$(Q)echo "LD      $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(LD) $(LDFLAGS) $(OBJS) -o $@
+	$(Q)$(LD) $(OBJS) $(LDFLAGS) -o $@
 
 clean:
 	$(Q)echo "CLEAN  $(OUTPUT)"

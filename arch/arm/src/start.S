@@ -3,5 +3,5 @@
 
 _start:
     bl main
-    # First argument (r0) is the application exit status
+    # SYSCALL_EXIT: First argument (r0) is the application exit status
     svc 0
