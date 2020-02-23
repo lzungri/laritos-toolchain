@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
 
 void *memcpy(void *dest, const void *src, size_t n);
 void *memset(void *buf, int c, size_t count);
@@ -13,3 +14,7 @@ char *strncpy(char *dest, const char *src, size_t n);
 char *strchr(const char *s, char c);
 char *strrchr(const char *s, char c);
 char *strstr(const char *str, const char *substr, size_t n);
+
+static inline bool is_printable(char c) {
+    return c >= 32 && c < 127;
+}
