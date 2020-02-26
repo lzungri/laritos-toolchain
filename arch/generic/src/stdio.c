@@ -1,12 +1,9 @@
 #include <stdio.h>
 #include <printf.h>
 
-#define CHAR_DELETE (0x7f)
-#define CURSOR_LEFT "\033[1D"
-
 int readline_and_prompt(char *buf, int buflen) {
     if (buflen < 1) {
-        return -1;
+        return CHAR_EOF;
     }
 
     int i = 0;
@@ -21,6 +18,8 @@ int readline_and_prompt(char *buf, int buflen) {
                 // Replace printed char with a space
                 printf(CURSOR_LEFT " " CURSOR_LEFT);
             }
+        } else if (buf[i] == CHAR_END_OF_TEXT) {
+            return CHAR_EOF;
         } else {
             printf("%c", buf[i]);
             i++;
