@@ -56,13 +56,14 @@
  * Defines a syscall function
  *
  * @param x: Number of argument pairs
+ * @param rettype: Return value type
  * @param no: Syscall number
  * @param name: Syscall name
  * @param varargs: (type, varname)*
  */
-#define DEF_SYSCALLx(x, no, name, ...) \
-    static inline int name(__MAP(x, __SC_DECL, __VA_ARGS__)) { \
-        int ret = 0; \
+#define DEF_SYSCALLx(x, rettype, no, name, ...) \
+    static inline rettype name(__MAP(x, __SC_DECL, __VA_ARGS__)) { \
+        rettype ret; \
         ARCH_SYSCALLx(x, no, ret, ##__VA_ARGS__); \
         return ret; \
     }
@@ -74,4 +75,14 @@
  * @param name: Syscall name
  * @param varargs: (type, varname)*
  */
-#define DEF_SYSCALL(no, name, ...) DEF_SYSCALLx(COUNT_ARG_PAIRS(__VA_ARGS__), no, name, ##__VA_ARGS__)
+#define DEF_SYSCALL(no, name, ...) DEF_SYSCALLx(COUNT_ARG_PAIRS(__VA_ARGS__), int, no, name, ##__VA_ARGS__)
+
+/**
+ * Defines a syscall function
+ *
+ * @param rettype: Return value type
+ * @param no: Syscall number
+ * @param name: Syscall name
+ * @param varargs: (type, varname)*
+ */
+#define DEF_SYSCALL_RET_TYPE(rettype, no, name, ...) DEF_SYSCALLx(COUNT_ARG_PAIRS(__VA_ARGS__), rettype, no, name, ##__VA_ARGS__)
