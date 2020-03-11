@@ -98,9 +98,9 @@ $(RESOURCES):
 		echo "Invalid or empty installation directory"; \
 		false; \
 	fi
-	$(Q)echo "CP      $@ -> $(INSTALL_DIR)/res/$(APP)"
-	$(Q)mkdir -p $(INSTALL_DIR)/res/$(APP)
-	$(Q)cp $@ $(INSTALL_DIR)/res/$(APP)
+	$(Q)echo "CP      $@ -> $(INSTALL_DIR)/res/$(APP)/$@"
+	$(Q)mkdir -p $(dir $(INSTALL_DIR)/res/$(APP)/$@)
+	$(Q)cp $@ $(INSTALL_DIR)/res/$(APP)/$@
 
 # Copy binaries into the given $(INSTALL_DIR)
 install: $(OUTPUT)/$(APP).elf $(RESOURCES)
