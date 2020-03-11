@@ -69,7 +69,7 @@ OBJS += $(addprefix $(OUTPUT)/, $(SRCS_AS:.S=.o))
 DEPS := $(SRCS_C:%.c=$(OUTPUT_DEPS)/%.d)
 
 # Targets
-.PHONY: all install clean printmap relocs
+.PHONY: all clean printmap relocs $(RESOURCES)
 
 all: $(OUTPUT)/$(APP).elf
 
@@ -92,13 +92,24 @@ $(OUTPUT)/$(APP).elf: $(OBJS)
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(LD) $(OBJS) $(LDFLAGS) -o $@
 
-install: $(OUTPUT)/$(APP).elf
+# Copy resources into the given $(INSTALL_DIR)
+$(RESOURCES):
+	$(Q)if [ ! -d $(INSTALL_DIR) ]; then \
+		echo "Invalid or empty installation directory"; \
+		false; \
+	fi
+	$(Q)echo "CP      $@ -> $(INSTALL_DIR)/res/$(APP)"
+	$(Q)mkdir -p $(INSTALL_DIR)/res/$(APP)
+	$(Q)cp $@ $(INSTALL_DIR)/res/$(APP)
+
+# Copy binaries into the given $(INSTALL_DIR)
+install: $(OUTPUT)/$(APP).elf $(RESOURCES)
 	$(Q)if [ ! -d $(INSTALL_DIR) ]; then \
 		echo "Invalid or empty installation directory"; \
 		false; \
 	fi
 	$(Q)echo "CP      $< -> $(INSTALL_DIR)/bin"
-	$(Q)mkdir -p $(INSTALL_DIR)/bin/
+	$(Q)mkdir -p $(INSTALL_DIR)/bin
 	$(Q)cp $< $(INSTALL_DIR)/bin
 
 clean:
