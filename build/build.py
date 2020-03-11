@@ -24,6 +24,8 @@ def main(args):
         makeargs.append("clean")
     if args.install:
         makeargs.append("install")
+    if args.printdatabase:
+        makeargs.append("-p")
 
     for app in args.apps:
         if not os.path.isdir(app) or not os.path.isfile(os.path.join(app, "Makefile")):
@@ -49,6 +51,9 @@ def parse_args(argv):
                         help="Target architecture")
     parser.add_argument("--subarch", default="armv7-a",
                         help="Target sub-architecture (if any)")
+    parser.add_argument("-p", "--printdatabase", default=False, action="store_true",
+                        help="Print the data base (rules and variable values) that \
+                        results from reading  the  makefiles")
     parser.add_argument("--crossc", default="arm-none-eabi-",
                         help="Cross compiler")
     parser.add_argument("-v", "--verbose", default=False, action="store_true",
