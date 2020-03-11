@@ -39,6 +39,11 @@ def parse_args(argv):
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("apps", metavar="app", nargs="+",
                         help="Path to the application to build")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-i", "--install", metavar="path",
+                       help="Install object files in the given system image root path")
+    group.add_argument("-c", "--clean", default=False, action="store_true",
+                       help="Remove all objects rather than building the app/s")
     parser.add_argument("--arch", default="arm",
                         help="Target architecture")
     parser.add_argument("--subarch", default="armv7-a",
@@ -47,11 +52,6 @@ def parse_args(argv):
                         help="Cross compiler")
     parser.add_argument("-v", "--verbose", default=False, action="store_true",
                         help="Increase logging")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-i", "--install", metavar="path",
-                       help="Install executable/s in the given system image path")
-    group.add_argument("-c", "--clean", default=False, action="store_true",
-                       help="Remove all objects rather than building the app/s")
     return parser.parse_args(argv)
 
 
