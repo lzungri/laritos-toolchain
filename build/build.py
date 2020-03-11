@@ -26,9 +26,10 @@ def main(args):
         makeargs.append("install")
 
     for app in args.apps:
-        if not os.path.isdir(app):
+        if not os.path.isdir(app) or not os.path.isfile(os.path.join(app, "Makefile")):
+            print("Ignoring '{}', not a valid laritOS application".format(app))
             continue
-        print("Building {}".format(app))
+        print("Building '{}'".format(app))
         makecmd = ["make", "-f", os.path.join(script_dir, "main.mk"),
                    "-C", os.path.realpath(app)] + makeargs
         subprocess.check_call(makecmd, env=env)
