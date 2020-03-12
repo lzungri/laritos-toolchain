@@ -30,3 +30,4 @@ DEF_SYSCALL_RET_TYPE(file_t *, SYSCALL_OPEN, open, char *, path, access_mode_t, 
 DEF_SYSCALL(SYSCALL_CLOSE, close, file_t *, file);
 DEF_SYSCALL(SYSCALL_READ, read, file_t *, file, void *, buf, int, buflen);
 DEF_SYSCALL(SYSCALL_WRITE, write, file_t *, file, void *, buf, int, buflen);
+DEF_SYSCALL(SYSCALL_SPAWN_PROCESS, spawn_process, const char *, path);
