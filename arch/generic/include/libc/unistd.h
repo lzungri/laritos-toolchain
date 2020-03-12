@@ -31,3 +31,4 @@ DEF_SYSCALL(SYSCALL_CLOSE, close, file_t *, file);
 DEF_SYSCALL(SYSCALL_READ, read, file_t *, file, void *, buf, int, buflen);
 DEF_SYSCALL(SYSCALL_WRITE, write, file_t *, file, void *, buf, int, buflen);
 DEF_SYSCALL(SYSCALL_SPAWN_PROCESS, spawn_process, const char *, path);
+DEF_SYSCALL(SYSCALL_WAITPID, waitpid, int, pid, int *, status);
