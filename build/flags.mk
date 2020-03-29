@@ -74,7 +74,7 @@ CFLAGS += -fstack-usage
 endif
 
 # Debugging
-#CFLAGS += -g
+CFLAGS += -g
 
 # Generate dependency files (useful for rebuilding on header change)
 CFLAGS_DEPS = -MT $@ -MMD -MP -MF $(OUTPUT_DEPS)/$*.d
